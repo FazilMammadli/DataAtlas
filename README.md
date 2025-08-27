@@ -4,8 +4,8 @@ Gathers weather data from cities across the globe with a population greater than
 Geography and Demographics: Includes a diverse range of indexes and metrics like population, births, deaths, life expectancy, expected years of schooling, and more.
 Socio-Economics: Delivers insights on various economic indicators such as GDP, GDP per capita, GNI, and the HDI to gauge economic health and living standards across different regions.
 The extensive range of data provides a comprehensive view of global trends and patterns, making it an invaluable resource for analysts, policymakers, data enthusiasts, and anyone interested in understanding the world better through data.
-![image]([https://github.com/FazilMammadli/DataAtlas/assets/98173546/88c2e0f2-d105-46cd-8b3e-5377c0c2fe84](https://github.com/FazilMammadli/DataAtlas/blob/main/w_1.png))
-![image]([https://github.com/FazilMammadli/DataAtlas/assets/98173546/79ca3f30-fc10-44af-b6f2-4d3d2fefbafb](https://github.com/FazilMammadli/DataAtlas/blob/main/w_2.png))
+![Dashboard Screenshot]([https://github.com/FazilMammadli/DataAtlas/assets/98173546/88c2e0f2-d105-46cd-8b3e-5377c0c2fe84](https://github.com/FazilMammadli/DataAtlas/blob/main/w_1.png))
+![Dashboard Screenshot 2]([https://github.com/FazilMammadli/DataAtlas/assets/98173546/79ca3f30-fc10-44af-b6f2-4d3d2fefbafb](https://github.com/FazilMammadli/DataAtlas/blob/main/w_2.png))
 
 
 ## Getting Started
