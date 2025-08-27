@@ -1,0 +1,2533 @@
+{
+  "compatibilityLevel": 1550,
+  "model": {
+    "annotations": [
+      {
+        "name": "PBI_QueryOrder",
+        "value": "[\"dMetricSystem\",\"dMetrics\",\"dCountries\",\"dCities\",\"factBirthsDeaths\",\"factCarbonIntensityElectricity\",\"factFreedomOfExpressionIndex\",\"factGDP\",\"factGDPperCapita\",\"factHDI\",\"factMerchandiseExportsGdp\",\"factPopulation\",\"factLifeExpectancy\",\"factExpectedYearsSchooling\",\"factGNI\",\"factForecast\",\"factData\",\"_Measures\",\"PathToData\",\"API Key\",\"Switch\"]"
+      },
+      {
+        "name": "__PBI_TimeIntelligenceEnabled",
+        "value": "0"
+      },
+      {
+        "name": "PBIDesktopVersion",
+        "value": "2.126.1261.0 (24.02)"
+      },
+      {
+        "name": "PBI_ProTooling",
+        "value": "[\"DevMode\"]"
+      }
+    ],
+    "culture": "en-US",
+    "cultures": [
+      {
+        "name": "en-US",
+        "linguisticMetadata": {
+          "content": {
+            "DynamicImprovement": "HighConfidence",
+            "Language": "en-US",
+            "Version": "1.0.0"
+          },
+          "contentType": "json"
+        }
+      }
+    ],
+    "dataAccessOptions": {
+      "fastCombine": true,
+      "legacyRedirects": true,
+      "returnErrorValuesAsNull": true
+    },
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "expressions": [
+      {
+        "name": "factBirthsDeaths",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ],
+        "expression": [
+          "let",
+          "  Source = Csv.Document(File.Contents(PathToData&\"\\births-and-deaths-projected-to-2100.csv\"), [Delimiter = \",\", Columns = 7, QuoteStyle = QuoteStyle.None]),",
+          "  #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+          "    #\"Extracted Text Before Delimiter\" = Table.TransformColumns(#\"Promoted Headers\", {{\"Deaths - Sex: all - Age: all - Variant: estimates\", each Text.BeforeDelimiter(_, \".\"), type text}, {\"Births - Sex: all - Age: all - Variant: estimates\", each Text.BeforeDelimiter(_, \".\"), type text}}),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Extracted Text Before Delimiter\",{{\"Entity\", type text}, {\"Code\", type text}, {\"Year\", Int64.Type}, {\"Deaths - Sex: all - Age: all - Variant: estimates\", type number}, {\"Deaths - Sex: all - Age: all - Variant: medium\", type number}, {\"Births - Sex: all - Age: all - Variant: estimates\", type number}, {\"Births - Sex: all - Age: all - Variant: medium\", type number}}),",
+          "    #\"Filtered only past\" = Table.SelectRows(#\"Changed Type\", each ([#\"Deaths - Sex: all - Age: all - Variant: estimates\"] <> null and [#\"Deaths - Sex: all - Age: all - Variant: estimates\"] <> \"\")),",
+          "    #\"Renamed Columns\" = Table.RenameColumns(#\"Filtered only past\",{{\"Deaths - Sex: all - Age: all - Variant: estimates\", \"Deaths\"}, {\"Births - Sex: all - Age: all - Variant: estimates\", \"Births\"}}),",
+          "    #\"Filtered blanks on ISO\" = Table.SelectRows(#\"Renamed Columns\", each ([Code] <> \"\")),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Filtered blanks on ISO\",{\"Entity\", \"Code\", \"Year\", \"Deaths\", \"Births\"}),",
+          "    #\"Unpivoted Columns\" = Table.UnpivotOtherColumns(#\"Removed Other Columns\", {\"Entity\", \"Code\", \"Year\"}, \"Attribute\", \"Value\")",
+          "in",
+          "    #\"Unpivoted Columns\""
+        ],
+        "kind": "m",
+        "lineageTag": "cfeefc50-eedb-4aef-9650-bf325106a155",
+        "queryGroup": "Fact World Data"
+      },
+      {
+        "name": "factCarbonIntensityElectricity",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ],
+        "expression": [
+          "let",
+          "  Source = Csv.Document(File.Contents(PathToData&\"\\carbon-intensity-electricity.csv\"), [Delimiter = \",\", Columns = 4, QuoteStyle = QuoteStyle.None]),",
+          "  #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Promoted Headers\",{\"Entity\", \"Code\", \"Year\", \"Carbon intensity of electricity (gCO2/kWh)\"}),",
+          "    #\"Filtered blanks on ISO\" = Table.SelectRows(#\"Removed Other Columns\", each ([Code] <> \"\")),",
+          "    #\"Changed Type with Locale\" = Table.TransformColumnTypes(#\"Filtered blanks on ISO\", {{\"Carbon intensity of electricity (gCO2/kWh)\", type number}}, \"en-US\"),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Changed Type with Locale\",{{\"Year\", Int64.Type}}),",
+          "    #\"Unpivoted Columns\" = Table.UnpivotOtherColumns(#\"Changed Type\", {\"Entity\", \"Code\", \"Year\"}, \"Attribute\", \"Value\")",
+          "in",
+          "    #\"Unpivoted Columns\""
+        ],
+        "kind": "m",
+        "lineageTag": "2ea2a37b-cffc-4c4d-9b01-f8e07538ff37",
+        "queryGroup": "Fact World Data"
+      },
+      {
+        "name": "factFreedomOfExpressionIndex",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ],
+        "expression": [
+          "let",
+          "  Source = Csv.Document(File.Contents(PathToData&\"\\freedom-of-expression-index.csv\"), [Delimiter = \",\", Columns = 6, QuoteStyle = QuoteStyle.None]),",
+          "  #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Promoted Headers\",{\"Entity\", \"Code\", \"Year\", \"freeexpr_vdem_owid\", \"freeexpr_vdem_high_owid\", \"freeexpr_vdem_low_owid\"}),",
+          "    #\"Changed Type with Locale\" = Table.TransformColumnTypes(#\"Removed Other Columns\", {{\"freeexpr_vdem_owid\", type number}, {\"freeexpr_vdem_high_owid\", type number}, {\"freeexpr_vdem_low_owid\", type number}}, \"en-US\"),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Changed Type with Locale\",{{\"Year\", Int64.Type}}),",
+          "    #\"Filtered blanks on ISO\" = Table.SelectRows(#\"Changed Type\", each [Code] <> null and [Code] <> \"\"),",
+          "    #\"Unpivoted Columns\" = Table.UnpivotOtherColumns(#\"Filtered blanks on ISO\", {\"Entity\", \"Code\", \"Year\"}, \"Attribute\", \"Value\")",
+          "in",
+          "    #\"Unpivoted Columns\""
+        ],
+        "kind": "m",
+        "lineageTag": "d0e63437-d9cb-4257-8326-0a60a2bb605d",
+        "queryGroup": "Fact World Data"
+      },
+      {
+        "name": "factGDP",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ],
+        "expression": [
+          "let",
+          "  Source = Csv.Document(File.Contents(PathToData&\"\\gdp.csv\"), [Delimiter = \",\", Columns = 4, QuoteStyle = QuoteStyle.None]),",
+          "  #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Promoted Headers\",{\"Entity\", \"Code\", \"Year\", \"GDP (constant 2015 US$)\"}),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Removed Other Columns\",{{\"GDP (constant 2015 US$)\", type number}, {\"Year\", Int64.Type}}),",
+          "    #\"Filtered blanks on ISO\" = Table.SelectRows(#\"Changed Type\", each [Code] <> null and [Code] <> \"\"),",
+          "    #\"Unpivoted Columns\" = Table.UnpivotOtherColumns(#\"Filtered blanks on ISO\", {\"Entity\", \"Code\", \"Year\"}, \"Attribute\", \"Value\")",
+          "in",
+          "    #\"Unpivoted Columns\""
+        ],
+        "kind": "m",
+        "lineageTag": "3db46cc7-4587-4d21-99ea-4695c857dc6e",
+        "queryGroup": "Fact World Data"
+      },
+      {
+        "name": "factGDPperCapita",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ],
+        "expression": [
+          "let",
+          "  Source = Csv.Document(File.Contents(PathToData&\"\\gdp-per-capita.csv\"), [Delimiter = \",\", Columns = 5, QuoteStyle = QuoteStyle.None]),",
+          "  #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Promoted Headers\",{\"Entity\", \"Code\", \"Year\", \"GDP per capita\"}),",
+          "    #\"Changed Type with Locale\" = Table.TransformColumnTypes(#\"Removed Other Columns\", {{\"GDP per capita\", type number}}, \"en-US\"),",
+          "    #\"Filtered blanks on ISO\" = Table.SelectRows(#\"Changed Type with Locale\", each [Code] <> null and [Code] <> \"\"),",
+          "    #\"Unpivoted Columns\" = Table.UnpivotOtherColumns(#\"Filtered blanks on ISO\", {\"Entity\", \"Code\", \"Year\"}, \"Attribute\", \"Value\"),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Unpivoted Columns\",{{\"Year\", Int64.Type}})",
+          "in",
+          "    #\"Changed Type\""
+        ],
+        "kind": "m",
+        "lineageTag": "3deb0b0d-2923-4aa4-bdab-89c1ad73c014",
+        "queryGroup": "Fact World Data"
+      },
+      {
+        "name": "factHDI",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ],
+        "expression": [
+          "let",
+          "  Source = Csv.Document(File.Contents(PathToData&\"\\human-development-index.csv\"), [Delimiter = \",\", Columns = 4, QuoteStyle = QuoteStyle.None]),",
+          "  #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Promoted Headers\",{\"Entity\", \"Code\", \"Year\", \"Human Development Index\"}),",
+          "    #\"Filtered blanks on ISO\" = Table.SelectRows(#\"Removed Other Columns\", each [Code] <> null and [Code] <> \"\"),",
+          "    #\"Changed Type with Locale\" = Table.TransformColumnTypes(#\"Filtered blanks on ISO\", {{\"Human Development Index\", type number}}, \"en-US\"),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Changed Type with Locale\",{{\"Year\", Int64.Type}}),",
+          "    #\"Unpivoted Columns\" = Table.UnpivotOtherColumns(#\"Changed Type\", {\"Entity\", \"Code\", \"Year\"}, \"Attribute\", \"Value\")",
+          "in",
+          "    #\"Unpivoted Columns\""
+        ],
+        "kind": "m",
+        "lineageTag": "2ed8970f-cbaa-4332-80c8-38bfa43c27c9",
+        "queryGroup": "Fact World Data"
+      },
+      {
+        "name": "factMerchandiseExportsGdp",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ],
+        "expression": [
+          "let",
+          "  Source = Csv.Document(File.Contents(PathToData&\"\\merchandise-exports-gdp-cepii.csv\"), [Delimiter = \",\", Columns = 4, QuoteStyle = QuoteStyle.None]),",
+          "  #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Promoted Headers\",{\"Entity\", \"Code\", \"Year\", \"Value of global merchandise exports as a share of GDP (Fouquin and Hugot; CEPII 2016; National data)\"}),",
+          "    #\"Filtered blanks on ISO\" = Table.SelectRows(#\"Removed Other Columns\", each [Code] <> null and [Code] <> \"\"),",
+          "    #\"Changed Type with Locale\" = Table.TransformColumnTypes(#\"Filtered blanks on ISO\", {{\"Value of global merchandise exports as a share of GDP (Fouquin and Hugot; CEPII 2016; National data)\", type number}}, \"en-US\"),",
+          "    #\"Added % col\" = Table.AddColumn(#\"Changed Type with Locale\", \"Value of global merchandise exports as a share of GDP\", each [#\"Value of global merchandise exports as a share of GDP (Fouquin and Hugot; CEPII 2016; National data)\"]/100, type number),",
+          "    #\"Removed Columns\" = Table.RemoveColumns(#\"Added % col\",{\"Value of global merchandise exports as a share of GDP (Fouquin and Hugot; CEPII 2016; National data)\"}),",
+          "    #\"Unpivoted Columns\" = Table.UnpivotOtherColumns(#\"Removed Columns\", {\"Entity\", \"Code\", \"Year\"}, \"Attribute\", \"Value\"),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Unpivoted Columns\",{{\"Year\", Int64.Type}})",
+          "in",
+          "    #\"Changed Type\""
+        ],
+        "kind": "m",
+        "lineageTag": "2068a30a-3669-4452-9746-1fb28cc35095",
+        "queryGroup": "Fact World Data"
+      },
+      {
+        "name": "factPopulation",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ],
+        "expression": [
+          "let",
+          "  Source = Csv.Document(File.Contents(PathToData&\"\\population.csv\"), [Delimiter = \",\", Columns = 4, QuoteStyle = QuoteStyle.None]),",
+          "   #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Promoted Headers\",{\"Entity\", \"Code\", \"Year\", \"Population (historical estimates)\"}),",
+          "    #\"Renamed Columns\" = Table.RenameColumns(#\"Removed Other Columns\",{{\"Population (historical estimates)\", \"Population\"}}),",
+          "    #\"Filtered blanks on ISO\" = Table.SelectRows(#\"Renamed Columns\", each [Code] <> null and [Code] <> \"\"),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Filtered blanks on ISO\",{{\"Population\", Int64.Type}, {\"Year\", Int64.Type}}),",
+          "    #\"Unpivoted Columns\" = Table.UnpivotOtherColumns(#\"Changed Type\", {\"Entity\", \"Code\", \"Year\"}, \"Attribute\", \"Value\")",
+          "in",
+          "    #\"Unpivoted Columns\""
+        ],
+        "kind": "m",
+        "lineageTag": "1028f7cf-ba7b-4898-8949-21cd42886f8f",
+        "queryGroup": "Fact World Data"
+      },
+      {
+        "name": "factLifeExpectancy",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ],
+        "expression": [
+          "let",
+          "  Source = Csv.Document(File.Contents(PathToData&\"\\life-expectancy.csv\"), [Delimiter = \",\", Columns = 4, QuoteStyle = QuoteStyle.None]),",
+          "  #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Promoted Headers\",{\"Entity\", \"Code\", \"Year\", \"Life expectancy at birth (historical)\"}),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Removed Other Columns\",{{\"Year\", Int64.Type}}),",
+          "    #\"Changed Type with Locale\" = Table.TransformColumnTypes(#\"Changed Type\", {{\"Life expectancy at birth (historical)\", type number}}, \"en-US\"),",
+          "    #\"Renamed Columns\" = Table.RenameColumns(#\"Changed Type with Locale\",{{\"Life expectancy at birth (historical)\", \"Life expectancy at birth\"}}),",
+          "    #\"Unpivoted Columns\" = Table.UnpivotOtherColumns(#\"Renamed Columns\", {\"Entity\", \"Code\", \"Year\"}, \"Attribute\", \"Value\"),",
+          "    #\"Filtered Rows\" = Table.SelectRows(#\"Unpivoted Columns\", each [Code] <> null and [Code] <> \"\")",
+          "in",
+          "    #\"Filtered Rows\""
+        ],
+        "kind": "m",
+        "lineageTag": "6a74860e-f691-4f0d-ab51-784c6ff82916",
+        "queryGroup": "Fact World Data"
+      },
+      {
+        "name": "factExpectedYearsSchooling",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ],
+        "expression": [
+          "let",
+          "  Source = Csv.Document(File.Contents(PathToData&\"\\expected-years-of-schooling.csv\"), [Delimiter = \",\", Columns = 4, QuoteStyle = QuoteStyle.None]),",
+          "  #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Promoted Headers\",{\"Entity\", \"Code\", \"Year\", \"Expected Years of Schooling\"}),",
+          "    #\"Changed Type with Locale\" = Table.TransformColumnTypes(#\"Removed Other Columns\", {{\"Expected Years of Schooling\", type number}}, \"en-US\"),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Changed Type with Locale\",{{\"Year\", Int64.Type}}),",
+          "    #\"Filtered Rows\" = Table.SelectRows(#\"Changed Type\", each [Code] <> null and [Code] <> \"\"),",
+          "    #\"Renamed Columns\" = Table.RenameColumns(#\"Filtered Rows\",{{\"Expected Years of Schooling\", \"Expected years of schooling\"}}),",
+          "    #\"Unpivoted Columns\" = Table.UnpivotOtherColumns(#\"Renamed Columns\", {\"Entity\", \"Code\", \"Year\"}, \"Attribute\", \"Value\")",
+          "in",
+          "    #\"Unpivoted Columns\""
+        ],
+        "kind": "m",
+        "lineageTag": "795dcaaa-ed68-4292-95e7-3884e9a90abc",
+        "queryGroup": "Fact World Data"
+      },
+      {
+        "name": "factGNI",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ],
+        "expression": [
+          "let",
+          "  Source = Csv.Document(File.Contents(PathToData&\"\\world-banks-income-groups.csv\"), [Delimiter = \",\", Columns = 4, QuoteStyle = QuoteStyle.None]),",
+          "  #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Promoted Headers\",{\"Entity\", \"Code\", \"Year\", \"Income classifications (World Bank (2021))\"}),",
+          "    #\"Renamed Columns\" = Table.RenameColumns(#\"Removed Other Columns\",{{\"Income classifications (World Bank (2021))\", \"Gross national income\"}}),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Renamed Columns\",{{\"Year\", Int64.Type}}),",
+          "    #\"Unpivoted Columns\" = Table.UnpivotOtherColumns(#\"Changed Type\", {\"Entity\", \"Code\", \"Year\"}, \"Attribute\", \"Class\"),",
+          "    #\"Filtered Rows\" = Table.SelectRows(#\"Unpivoted Columns\", each [Code] <> null and [Code] <> \"\")",
+          "in",
+          "    #\"Filtered Rows\""
+        ],
+        "kind": "m",
+        "lineageTag": "4e43e820-093a-4051-8b81-b667388a928d",
+        "queryGroup": "Fact World Data"
+      },
+      {
+        "name": "PathToData",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Text"
+          }
+        ],
+        "expression": "\"C:\\Users\\KlausFolz\\Desktop\\GD\\Repositories\\WorldDataReport\\Data\" meta [IsParameterQuery=true, Type=\"Text\", IsParameterQueryRequired=true]",
+        "kind": "m",
+        "lineageTag": "9d288fd6-ffbd-435f-aa9d-319e9a1d33a4",
+        "queryGroup": "Parameters and Functions"
+      },
+      {
+        "name": "API Key",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Text"
+          }
+        ],
+        "expression": [
+          "let",
+          "    Source = \"03717c3603924a39ad4122604222405\" meta [IsParameterQuery=true, Type=\"Text\", IsParameterQueryRequired=true]",
+          "in",
+          "    Source"
+        ],
+        "kind": "m",
+        "lineageTag": "52cace48-003f-4a92-8d7c-f6e5453ff675",
+        "queryGroup": "Parameters and Functions"
+      },
+      {
+        "name": "Switch",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          },
+          {
+            "name": "PBI_ResultType",
+            "value": "Function"
+          }
+        ],
+        "expression": [
+          "let",
+          "    // Created by Daniil Maslyuk",
+          "    Switch =",
+          "        let",
+          "            Function = (input as list) as any =>",
+          "                let",
+          "                    Source = List.Buffer(input),",
+          "                    Expression = List.First(Source),",
+          "                    SkipExpression = List.Skip(Source),",
+          "                    HasElse = Number.IsEven(List.Count(Source)),",
+          "                    ElseValue = if HasElse then List.Last(Source) else null,",
+          "                    ValuesResults = List.RemoveLastN(SkipExpression, Number.From(HasElse)),",
+          "                    Values = List.Alternate(ValuesResults, 1, 1, 1),",
+          "                    Results = List.Alternate(ValuesResults, 1, 1, 0),",
+          "                    FirstResult = List.PositionOf(Values, Expression),",
+          "                    FunctionResult = if FirstResult = -1 then ElseValue else Results{FirstResult}",
+          "                in",
+          "                    FunctionResult,",
+          "            FunctionType = type function (input as list) as any",
+          "                meta [",
+          "                    Documentation.Name = \"Switch\",",
+          "                    Documentation.LongDescription = \"Evaluates an expression against a list of values and returns one of multiple possible result expressions.\",",
+          "                    Documentation.Examples = {",
+          "                        [Description = \"Simple Switch expression\", Code = \"Switch({2, 1, \"\"A\"\", 2, \"\"B\"\"})\", Result = \"\"\"B\"\"\"],",
+          "                        [Description = \"An equivalent of SWITCH(TRUE... in DAX\", Code = \"Switch({true, 1 > 2, \"\"A\"\", 1 < 2, \"\"B\"\", \"\"No result\"\"})\", Result = \"\"\"B\"\"\"]",
+          "                    }",
+          "                ],",
+          "            TypedFunction = Value.ReplaceType(Function, FunctionType)",
+          "        in",
+          "            TypedFunction",
+          "in",
+          "    Switch"
+        ],
+        "kind": "m",
+        "lineageTag": "c110ed8b-cf89-4046-b8ff-65d82941dddd",
+        "queryGroup": "Parameters and Functions"
+      }
+    ],
+    "queryGroups": [
+      {
+        "annotations": [
+          {
+            "name": "PBI_QueryGroupOrder",
+            "value": "2"
+          }
+        ],
+        "folder": "Dimension Tables"
+      },
+      {
+        "annotations": [
+          {
+            "name": "PBI_QueryGroupOrder",
+            "value": "3"
+          }
+        ],
+        "folder": "Fact World Data"
+      },
+      {
+        "annotations": [
+          {
+            "name": "PBI_QueryGroupOrder",
+            "value": "3"
+          }
+        ],
+        "folder": "Fact Weather"
+      },
+      {
+        "annotations": [
+          {
+            "name": "PBI_QueryGroupOrder",
+            "value": "2"
+          }
+        ],
+        "folder": "Parameters and Functions"
+      }
+    ],
+    "relationships": [
+      {
+        "name": "c3430d98-7716-4e7e-8a79-463bf7585f6f",
+        "fromColumn": "Code",
+        "fromTable": "factData",
+        "toColumn": "ISO3",
+        "toTable": "dCountries"
+      },
+      {
+        "name": "9535ecec-770b-48a1-aae5-e1d1d545e227",
+        "fromColumn": "Year",
+        "fromTable": "factData",
+        "toColumn": "Year",
+        "toTable": "dYear"
+      },
+      {
+        "name": "b31eb89b-85d5-48b7-957c-f1192602f1f9",
+        "fromColumn": "ID",
+        "fromTable": "factForecast",
+        "toColumn": "ID",
+        "toTable": "dCities"
+      },
+      {
+        "name": "373f2bdf-ed10-4e5a-a2bd-f846b227a763",
+        "fromColumn": "Attribute",
+        "fromTable": "factData",
+        "toColumn": "Attribute",
+        "toTable": "dMetrics"
+      },
+      {
+        "name": "97b93d46-f4c6-4163-ab4d-0536e1f923e9",
+        "fromColumn": "country_code",
+        "fromTable": "dCities",
+        "toColumn": "ISO",
+        "toTable": "dCountries"
+      }
+    ],
+    "sourceQueryCulture": "pt-BR",
+    "tables": [
+      {
+        "name": "dCities",
+        "annotations": [
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          },
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          }
+        ],
+        "columns": [
+          {
+            "name": "name",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "be6b83f7-ce79-49f9-b655-b0166d6c4408",
+            "sourceColumn": "name",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "asciiname",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "22c569db-906e-4f6c-8988-3cf0587b6cf4",
+            "sourceColumn": "asciiname",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "lat",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "2ed269d8-63e0-4655-b7c4-71f107f34a02",
+            "sourceColumn": "lat",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "lon",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "5386f211-67d6-49da-bdca-9bf67e3c7f33",
+            "sourceColumn": "lon",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "class",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "de6df6e1-e77c-4f3c-915e-288c5ec2f21d",
+            "sourceColumn": "class",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "country_code",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "1d58bcc3-cb25-421e-80a6-51c1501e0992",
+            "sourceColumn": "country_code",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "pop",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "a9925d51-7c6b-46e3-a1b2-f86462e65151",
+            "sourceColumn": "pop",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "elevation",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "f80363ce-69c7-4215-ada0-36dcf1e4c133",
+            "sourceColumn": "elevation",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "timezone",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "242ad1cd-bf71-4707-a3e8-a466489eb6c7",
+            "sourceColumn": "timezone",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ID",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "de68b91e-1cfc-45de-b3ab-cfd2a222d37f",
+            "sourceColumn": "ID",
+            "summarizeBy": "none"
+          }
+        ],
+        "excludeFromModelRefresh": true,
+        "lineageTag": "ccb7bde8-a249-4d43-a02b-2c1cdba50e95",
+        "partitions": [
+          {
+            "name": "dCities-5f84777c-8240-489c-96de-fb0817a2ff77",
+            "mode": "import",
+            "queryGroup": "Dimension Tables",
+            "source": {
+              "expression": [
+                "let",
+                "    Source = Excel.Workbook(File.Contents(PathToData&\"\\major_cities.xlsx\"), null, true),",
+                "    cities_Sheet = Source{[Item=\"cities\",Kind=\"Sheet\"]}[Data],",
+                "    #\"Promoted Headers\" = Table.PromoteHeaders(cities_Sheet, [PromoteAllScalars=true]),",
+                "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Promoted Headers\",{{\"name\", type text}, {\"asciiname\", type text}, {\"lat\", type number}, {\"lon\", type number}, {\"class\", type text}, {\"country_code\", type text}, {\"pop\", Int64.Type}, {\"elevation\", Int64.Type}, {\"timezone\", type text}, {\"ID\", Int64.Type}})",
+                "in",
+                "    #\"Changed Type\""
+              ],
+              "type": "m"
+            }
+          }
+        ]
+      },
+      {
+        "name": "factForecast",
+        "annotations": [
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          },
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          }
+        ],
+        "columns": [
+          {
+            "name": "time",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "dateTime",
+            "formatString": "General Date",
+            "lineageTag": "d9486651-8885-4ba4-ac3e-bf860912fb52",
+            "sourceColumn": "time",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "temp_c",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "8e5ea67c-2dec-433d-8eba-810b816d3086",
+            "sourceColumn": "temp_c",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "temp_f",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "1577a6ac-1837-45bd-b424-a3ea38b94039",
+            "sourceColumn": "temp_f",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "text",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "d63b95e3-2a3e-4f56-b7e6-ecd1fbc0d8c4",
+            "sourceColumn": "text",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "wind_mph",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "05352f3d-5538-4d78-8637-7bb8f8088887",
+            "sourceColumn": "wind_mph",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "wind_kph",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "4e50b9a4-d9a9-488d-b80e-0fc6f2d1b4e9",
+            "sourceColumn": "wind_kph",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "wind_degree",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "ac8776a0-f7d9-48e3-9ba2-18914312ec8e",
+            "sourceColumn": "wind_degree",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "wind_dir",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "a5dfab4f-e9fc-4735-9c80-74202cd9ac75",
+            "sourceColumn": "wind_dir",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "pressure_mb",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "568343ad-add0-4504-a4d3-35dc74e2c4f0",
+            "sourceColumn": "pressure_mb",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "pressure_in",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "1a860cc1-3033-42bd-aac7-6d001c26a95d",
+            "sourceColumn": "pressure_in",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "precip_mm",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "7089f20e-19b2-45e6-b830-731bc017bd5f",
+            "sourceColumn": "precip_mm",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "precip_in",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "d7987cb9-98d2-4043-b694-d682adcefc9b",
+            "sourceColumn": "precip_in",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "humidity",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "58bb114f-fa35-4e88-aa46-fdd2e3773dc4",
+            "sourceColumn": "humidity",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "cloud",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "141fd607-78a5-46b3-9b29-046d14778599",
+            "sourceColumn": "cloud",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "feelslike_c",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "d79491c3-595a-4ae7-a972-f75156376b7d",
+            "sourceColumn": "feelslike_c",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "feelslike_f",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "db578e91-78e1-4324-9a3a-fbbc6d69afd7",
+            "sourceColumn": "feelslike_f",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "windchill_c",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "14592d13-b991-4cd3-9ae9-d403c43ba858",
+            "sourceColumn": "windchill_c",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "windchill_f",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "e780feaf-ebdd-4590-a891-d4a6c688ace9",
+            "sourceColumn": "windchill_f",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "chance_of_rain",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "01d87ffe-0900-4bec-a358-5b7f3b2d3109",
+            "sourceColumn": "chance_of_rain",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "chance_of_snow",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "ebb656f2-91c0-4045-b007-d3d76a4fce59",
+            "sourceColumn": "chance_of_snow",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "uv",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "d9608eef-5f2d-46b5-8252-2ad541f089da",
+            "sourceColumn": "uv",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ConditionIcon",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "514fa2c3-9bb7-46de-b42b-86395db3803a",
+            "sourceColumn": "ConditionIcon",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "name",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "c3e84857-fb1f-461a-badd-d132d66dee0f",
+            "sourceColumn": "name",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ID",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "f2cfa520-04e8-42de-890b-b1bbb89b1da7",
+            "sourceColumn": "ID",
+            "summarizeBy": "none"
+          }
+        ],
+        "lineageTag": "912d1b37-c7b5-4a9a-a3d9-ac691a5c0bed",
+        "partitions": [
+          {
+            "name": "factForecast-5633c81c-6965-4df5-b584-d8f107ccfd1a",
+            "mode": "import",
+            "queryGroup": "Fact Weather",
+            "source": {
+              "expression": [
+                "let",
+                "  Source = dCities,",
+                "  #\"Kept only city col\" = Table.SelectColumns(Source, {\"name\", \"ID\"}),",
+                "  #\"Added API Forecast call\" = Table.AddColumn(#\"Kept only city col\", \"APicall\", each Json.Document(",
+                "    Web.Contents(",
+                "        \"http://api.weatherapi.com\",[RelativePath=\"v1/forecast.json?\", Query=[",
+                "                    key=#\"API Key\",",
+                "                    days=\"10\",",
+                "                    aqi=\"no\",",
+                "                    q=[name]",
+                "                    ]]))),",
+                "  #\"Removed Errors\" = Table.RemoveRowsWithErrors(#\"Added API Forecast call\", {\"APicall\"}),",
+                "  #\"Expanded APicall\" = Table.ExpandRecordColumn(#\"Removed Errors\", \"APicall\", {\"forecast\"}, {\"forecast\"}),",
+                "  #\"Expanded forecast\" = Table.ExpandRecordColumn(#\"Expanded APicall\", \"forecast\", {\"forecastday\"}, {\"forecastday\"}),",
+                "  #\"Expanded forecastday\" = Table.ExpandListColumn(#\"Expanded forecast\", \"forecastday\"),",
+                "  #\"Expanded forecastday1\" = Table.ExpandRecordColumn(#\"Expanded forecastday\", \"forecastday\", {\"hour\"}, {\"hour\"}),",
+                "  #\"Expanded hour\" = Table.ExpandListColumn(#\"Expanded forecastday1\", \"hour\"),",
+                "  #\"Expanded hour1\" = Table.ExpandRecordColumn(#\"Expanded hour\", \"hour\", {\"time\", \"temp_c\", \"temp_f\", \"condition\", \"wind_mph\", \"wind_kph\", \"wind_degree\", \"wind_dir\", \"pressure_mb\", \"pressure_in\", \"precip_mm\", \"precip_in\", \"humidity\", \"cloud\", \"feelslike_c\", \"feelslike_f\", \"windchill_c\", \"windchill_f\", \"chance_of_rain\", \"chance_of_snow\", \"uv\"}, {\"time\", \"temp_c\", \"temp_f\", \"condition\", \"wind_mph\", \"wind_kph\", \"wind_degree\", \"wind_dir\", \"pressure_mb\", \"pressure_in\", \"precip_mm\", \"precip_in\", \"humidity\", \"cloud\", \"feelslike_c\", \"feelslike_f\", \"windchill_c\", \"windchill_f\", \"chance_of_rain\", \"chance_of_snow\", \"uv\"}),",
+                "  #\"Expanded condition\" = Table.ExpandRecordColumn(#\"Expanded hour1\", \"condition\", {\"text\", \"icon\"}, {\"text\", \"icon\"}),",
+                "  #\"Changed Type\" = Table.TransformColumnTypes(#\"Expanded condition\", {{\"temp_f\", type number}, {\"temp_c\", type number}, {\"wind_mph\", type number}, {\"wind_kph\", type number}, {\"pressure_in\", type number}, {\"precip_mm\", type number}, {\"precip_in\", type number}, {\"feelslike_c\", type number}, {\"feelslike_f\", type number}, {\"windchill_c\", type number}, {\"windchill_f\", type number}, {\"time\", type datetime}, {\"text\", type text}, {\"icon\", type text}, {\"wind_dir\", type text}, {\"wind_degree\", Int64.Type}, {\"pressure_mb\", Int64.Type}, {\"humidity\", Int64.Type}, {\"cloud\", Int64.Type}, {\"chance_of_rain\", Int64.Type}, {\"chance_of_snow\", Int64.Type}}),",
+                "  #\"Added Cond. Icon url\" = Table.AddColumn(#\"Changed Type\", \"ConditionIcon\", each \"https:\" & [icon], type text),",
+                "  #\"Removed Columns\" = Table.RemoveColumns(#\"Added Cond. Icon url\", {\"icon\"}),",
+                "  #\"Transform columns\" = Table.TransformColumnTypes(#\"Removed Columns\", {{\"uv\", type text}}),",
+                "  #\"Replace errors\" = Table.ReplaceErrorValues(#\"Transform columns\", {{\"uv\", null}})",
+                "in",
+                "  #\"Replace errors\""
+              ],
+              "type": "m"
+            }
+          }
+        ]
+      },
+      {
+        "name": "dCountries",
+        "annotations": [
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          },
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          }
+        ],
+        "columns": [
+          {
+            "name": "ISO3",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "9dc8cd6f-f8cf-4f73-9478-2d1b6a2bf589",
+            "sourceColumn": "ISO3",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ISO-Numeric",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "916434a9-0e3c-4f78-91a3-3caa89cd6b7a",
+            "sourceColumn": "ISO-Numeric",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "fips",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "c7db0e4f-7379-47ef-a482-968bec895882",
+            "sourceColumn": "fips",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Country",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "568351e3-10db-409c-a978-77bba2cb1998",
+            "sourceColumn": "Country",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Capital",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "5bd2862d-9e8e-45ac-ae9f-0908be07ba27",
+            "sourceColumn": "Capital",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Area(in sq km)",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "e6269021-c286-45d1-8ad0-37f08a725761",
+            "sourceColumn": "Area(in sq km)",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "Population",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "81dd5210-b060-4092-9023-6906fb249f08",
+            "sourceColumn": "Population",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "tld",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "2a18d090-9a5e-4bc5-a410-731d3f562a25",
+            "sourceColumn": "tld",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "CurrencyCode",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "530e586d-d6fc-4fe3-a7ff-66cc23fa8494",
+            "sourceColumn": "CurrencyCode",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "CurrencyName",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "3e5427ea-8bec-43fd-96a1-c61ad9914e66",
+            "sourceColumn": "CurrencyName",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Phone",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "a51d3afa-4c18-450e-8989-5481c95a520e",
+            "sourceColumn": "Phone",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Postal Code Format",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "498d180e-efe2-4c96-b854-119c65d540f5",
+            "sourceColumn": "Postal Code Format",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Postal Code Regex",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "58a8bfb9-cc5b-4af6-b509-43753f8f52e8",
+            "sourceColumn": "Postal Code Regex",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Languages",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "07f8bf85-1295-4145-abd6-03ffae9cd437",
+            "sourceColumn": "Languages",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "geonameid",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "8a26b641-f3c2-41de-bdd5-ca99692d464e",
+            "sourceColumn": "geonameid",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "neighbours",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "2c985943-66a9-42b3-bcf5-37016bebaa54",
+            "sourceColumn": "neighbours",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "EquivalentFipsCode",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "fc3d6a9f-51ab-4cf3-9b9d-5f6efd580619",
+            "sourceColumn": "EquivalentFipsCode",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ISO",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "87300360-a3fd-4e45-b56a-2bdcfd2442b2",
+            "sourceColumn": "ISO",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ContinentAbreviation",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "b202bbfb-5995-4fb9-8fea-39c18de183d0",
+            "sourceColumn": "ContinentAbreviation",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ContinentName",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "236e03ba-159a-45da-8d73-2a7ea4f195b9",
+            "sourceColumn": "ContinentName",
+            "summarizeBy": "none"
+          }
+        ],
+        "excludeFromModelRefresh": true,
+        "lineageTag": "79a7641b-6474-4e48-831c-d7d94faf95e9",
+        "partitions": [
+          {
+            "name": "dCountries-21b4f221-ff8d-4f24-9e39-e65177821a5c",
+            "mode": "import",
+            "queryGroup": "Dimension Tables",
+            "source": {
+              "expression": [
+                "let",
+                "  Source = Excel.Workbook(File.Contents(PathToData & \"\\countries.xlsx\"), null, true), ",
+                "  countries_Sheet = Source{[Item = \"countries\", Kind = \"Sheet\"]}[Data], ",
+                "  #\"Promoted Headers\" = Table.PromoteHeaders(countries_Sheet, [PromoteAllScalars = true]), ",
+                "  #\"Changed Type\" = Table.TransformColumnTypes(",
+                "    #\"Promoted Headers\", ",
+                "    {",
+                "      {\"ISO\", type text}, ",
+                "      {\"ISO3\", type text}, ",
+                "      {\"ISO-Numeric\", Int64.Type}, ",
+                "      {\"fips\", type text}, ",
+                "      {\"Country\", type text}, ",
+                "      {\"Capital\", type text}, ",
+                "      {\"Area(in sq km)\", Int64.Type}, ",
+                "      {\"Population\", Int64.Type}, ",
+                "      {\"ContinentAbreviation\", type text}, ",
+                "      {\"tld\", type text}, ",
+                "      {\"CurrencyCode\", type text}, ",
+                "      {\"CurrencyName\", type text}, ",
+                "      {\"Phone\", type text}, ",
+                "      {\"Postal Code Format\", type text}, ",
+                "      {\"Postal Code Regex\", type text}, ",
+                "      {\"Languages\", type text}, ",
+                "      {\"geonameid\", Int64.Type}, ",
+                "      {\"neighbours\", type text}, ",
+                "      {\"EquivalentFipsCode\", type text}",
+                "    }",
+                "  ), ",
+                "  #\"Added ContinentName\" = Table.AddColumn(",
+                "    #\"Changed Type\", ",
+                "    \"ContinentName\", ",
+                "    each Switch(",
+                "      {",
+                "        [ContinentAbreviation], ",
+                "        \"EU\", \"Europe\", ",
+                "        \"NA\", \"North America\", ",
+                "        \"SA\", \"South America\", ",
+                "        \"OC\", \"Oceania\", ",
+                "        \"AF\", \"Africa\", ",
+                "        \"AS\", \"Asia\", ",
+                "        \"AN\", \"Antartica\"",
+                "      }",
+                "    ), ",
+                "    type text",
+                "  )",
+                "in",
+                "  #\"Added ContinentName\""
+              ],
+              "type": "m"
+            }
+          }
+        ]
+      },
+      {
+        "name": "factData",
+        "annotations": [
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          },
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          }
+        ],
+        "columns": [
+          {
+            "name": "Entity",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "49a30893-59a7-4dca-a8a1-19c6f44ea06d",
+            "sourceColumn": "Entity",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Code",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "e5d9c8b8-5c17-4dcb-b0da-5657df636d7d",
+            "sourceColumn": "Code",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Year",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "lineageTag": "0d8ed9ba-3361-4d1c-8c6f-19f9b32729e3",
+            "sourceColumn": "Year",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Attribute",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "985125a2-7b37-4344-a3ba-fa2a658fb887",
+            "sourceColumn": "Attribute",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Value",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "dataType": "double",
+            "lineageTag": "5cd20fd0-d57a-48e9-885e-de8d0ecd87e8",
+            "sourceColumn": "Value",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "Class",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "17998ed6-d50b-4a8c-b293-7844ca2a7930",
+            "sourceColumn": "Class",
+            "summarizeBy": "none"
+          }
+        ],
+        "excludeFromModelRefresh": true,
+        "lineageTag": "4d5f63d6-1249-4e3e-bf00-329693145aeb",
+        "partitions": [
+          {
+            "name": "factData-4927dfcd-380e-4433-8886-7b519c372095",
+            "mode": "import",
+            "queryGroup": "Fact World Data",
+            "source": {
+              "expression": [
+                "let",
+                "    Source = Table.Combine({factBirthsDeaths, factCarbonIntensityElectricity, factFreedomOfExpressionIndex, factGDP, factGDPperCapita, factHDI, factMerchandiseExportsGdp, factPopulation, factLifeExpectancy, factExpectedYearsSchooling, factGNI})",
+                "in",
+                "    Source"
+              ],
+              "type": "m"
+            }
+          }
+        ]
+      },
+      {
+        "name": "_Measures",
+        "annotations": [
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          },
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          }
+        ],
+        "lineageTag": "094665df-3b7b-40b1-8e37-58373a21a77c",
+        "measures": [
+          {
+            "name": "MapOverlay",
+            "displayFolder": "Map Measures",
+            "expression": [
+              "",
+              "VAR _key = \"ba65bf7ce74616797f7b2055aea2596e\"",
+              "VAR _type  = ",
+              "    SWITCH(",
+              "        \"Temperature\",",
+              "        \"Temperature\", \"temp_new\",",
+              "        \"Condition\", \"temp_new\",",
+              "        \"Pressure\",\"pressure_new\",",
+              "        \"Humidity\",\"clouds_new\",",
+              "        \"Wind direction\",\"wind_new\",",
+              "        \"Wind speed\",\"wind_new\",",
+              "        \"Rain probability\",\"precipitation_new\")",
+              "RETURN",
+              "    \"https://tile.openweathermap.org/map/\"&_type&\"/{z}/{x}/{y}.png?appid=\"&_key"
+            ],
+            "lineageTag": "47e29671-4246-4be8-bd27-60ea52f05291"
+          },
+          {
+            "name": "MapBackground",
+            "displayFolder": "Map Measures",
+            "expression": "\"https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png\"",
+            "lineageTag": "cc988bbd-9a07-4b2c-bf86-517d61129f06"
+          },
+          {
+            "name": "MapSize",
+            "displayFolder": "Map Measures",
+            "expression": [
+              "//If a country is selected shows all the cities, else show only capitals",
+              "VAR selected_country = ",
+              "    SELECTEDVALUE(dCountries[Country])",
+              "VAR weather_icon = [MapIcon]",
+              "VAR capitals=",
+              "    CALCULATE(",
+              "        DISTINCTCOUNT(dCities[asciiname]),",
+              "        dCities[class]=\"PPLC\")",
+              "",
+              "RETURN",
+              "IF(",
+              "    NOT ISBLANK(weather_icon),",
+              "    IF(",
+              "        NOT ISBLANK(selected_country),",
+              "        1,",
+              "        capitals",
+              "    ),",
+              "    BLANK()",
+              ")"
+            ],
+            "formatString": "0",
+            "lineageTag": "c00cf0cb-7034-4e89-8768-47c9e63781e7"
+          },
+          {
+            "name": "Latitude",
+            "displayFolder": "Map Measures",
+            "expression": "MIN(dCities[lat])",
+            "lineageTag": "db0500e8-84a2-4a2e-8552-9d9e2395e047"
+          },
+          {
+            "name": "Longitude",
+            "displayFolder": "Map Measures",
+            "expression": "MIN(dCities[lon])",
+            "lineageTag": "b7c50bed-bccb-4e95-be4a-77f3397cd48d"
+          },
+          {
+            "name": "MapIcon",
+            "dataCategory": "ImageUrl",
+            "displayFolder": "Map Measures",
+            "expression": "CALCULATE(MIN(factForecast[ConditionIcon]))",
+            "lineageTag": "1c171fc9-04ae-4af8-af0c-1867403ffb56"
+          },
+          {
+            "name": "Human Development Index (HDI)",
+            "annotations": [
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"HDI\",",
+              "    NOT ISBLANK(dCountries[ISO3])",
+              ")"
+            ],
+            "lineageTag": "8da5c1d4-997b-43b1-97e1-c80b64e567d0"
+          },
+          {
+            "name": "Average Temperature",
+            "annotations": [
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "displayFolder": "Weather",
+            "expression": [
+              "",
+              "//Selected metric system",
+              "VAR system = SELECTEDVALUE(dMetricSystem[Metric System],\"International system\")",
+              "//International units",
+              "VAR si = AVERAGE(factForecast[temp_c])",
+              "//Imperial units",
+              "VAR imperial = AVERAGE(factForecast[temp_f])",
+              "RETURN",
+              "//Result",
+              "IF(",
+              "    system=\"Imperial system\", ",
+              "    imperial,",
+              "    si)"
+            ],
+            "lineageTag": "94f5ae3d-1fb8-4574-9438-813171fbf75b"
+          },
+          {
+            "name": "Deaths",
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"Deaths\"",
+              ")"
+            ],
+            "formatString": "#,0",
+            "lineageTag": "69c449dc-8d7b-4801-86ab-c2cf2ae0c498"
+          },
+          {
+            "name": "Births",
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"Births\"",
+              ")"
+            ],
+            "formatString": "#,0",
+            "lineageTag": "eaf9cbdc-f543-4044-b1d6-569695d22c13"
+          },
+          {
+            "name": "Carbon intensity of electricity (gCO2/kWh)",
+            "annotations": [
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"CIE\"",
+              ")"
+            ],
+            "lineageTag": "01796fbe-e6ca-4250-9b41-486a2a1c0bc5"
+          },
+          {
+            "name": "Democracy index (V-Dem)",
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"V-Dem\"",
+              ")"
+            ],
+            "formatString": "0.00",
+            "lineageTag": "68f7add4-94d3-41fc-849a-8d80a817debb"
+          },
+          {
+            "name": "Gross domestic product (GDP)",
+            "annotations": [
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"currencyCulture\":\"en-US\"}"
+              }
+            ],
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"GDP\"",
+              ")"
+            ],
+            "formatString": "\\$#,0;(\\$#,0);\\$#,0",
+            "lineageTag": "3163cbd4-7b9a-4534-a9da-6b97e8744068"
+          },
+          {
+            "name": "Gross domestic product per capita (GDP per capita)",
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"GDP/c\"",
+              ")"
+            ],
+            "formatString": "\\$#,0;(\\$#,0);\\$#,0",
+            "lineageTag": "9fc03b0f-c7da-4243-82ee-7628b74abf00"
+          },
+          {
+            "name": "Population",
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    SUM(factData[Value]),",
+              "    dMetrics[Alias]=\"pop\"",
+              ")"
+            ],
+            "formatString": "#,0",
+            "lineageTag": "bf968075-d959-42af-9a31-0b0e36cadab2"
+          },
+          {
+            "name": "SelectedMetric",
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "SWITCH(",
+              "    SELECTEDVALUE(dMetrics[Alias]),",
+              "    \"Deaths\",[Deaths],",
+              "    \"Births\",[Births],",
+              "    \"CIE\",[Carbon intensity of electricity (gCO2/kWh)],",
+              "    \"V-Dem\",[Democracy index (V-Dem)],",
+              "    \"V-Dem High\",[V-Dem High],",
+              "    \"V-Dem Low\",[V-Dem Low],",
+              "    \"GDP\",[Gross domestic product (GDP)],",
+              "    \"GDP/c\",[Gross domestic product per capita (GDP per capita)],",
+              "    \"HDI\",[Human Development Index (HDI)],",
+              "    \"Exports/GDP\",[Exports/GDP],",
+              "    \"pop\",[Population])"
+            ],
+            "lineageTag": "7e6e3862-3dfa-417e-bf19-8cfd6d9c10cc"
+          },
+          {
+            "name": "V-Dem High",
+            "annotations": [
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"V-Dem High\"",
+              ")"
+            ],
+            "lineageTag": "76841d27-499e-4600-a4ad-32b2dc5f617d"
+          },
+          {
+            "name": "V-Dem Low",
+            "annotations": [
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"V-Dem Low\"",
+              ")"
+            ],
+            "lineageTag": "0298d7da-4cb5-473e-83b0-c68911ca2391"
+          },
+          {
+            "name": "Exports/GDP",
+            "annotations": [
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"Exports/GDP\"",
+              ")"
+            ],
+            "lineageTag": "1f47bfc1-041b-4609-9fe6-74da39e7cf44"
+          },
+          {
+            "name": "HDI Class",
+            "displayFolder": "Classification and Conditionals",
+            "expression": [
+              "",
+              "VAR HDI = [Human Development Index (HDI)]",
+              "return",
+              "IF(",
+              "    HDI>=0.8,\"Very high human development\",",
+              "    IF(",
+              "        HDI>=0.7&&HDI<0.8, \"High human development\",",
+              "        IF(",
+              "            HDI>=0.55&&HDI<0.7,\"Medium human development\",",
+              "            IF(",
+              "                HDI>0&&HDI<0.55,\"Low human development\",\"No Data\")",
+              "        )",
+              "    )",
+              ")",
+              "",
+              ""
+            ],
+            "lineageTag": "476ae6fd-8b50-49c1-aab3-2e046ee04007"
+          },
+          {
+            "name": "Dark Green",
+            "displayFolder": "Colors",
+            "expression": "\"#287e8f\"",
+            "lineageTag": "9bafffc9-264c-490b-ae87-86c17c11abe3"
+          },
+          {
+            "name": "Light Green",
+            "displayFolder": "Colors",
+            "expression": "\"#7eb2bc\"",
+            "lineageTag": "a5c3e635-c702-447f-a5d2-220453253d5c"
+          },
+          {
+            "name": "Orange",
+            "displayFolder": "Colors",
+            "expression": "\"#f6b53d\"",
+            "lineageTag": "52e57c69-02ea-467b-abda-931e93b14db6"
+          },
+          {
+            "name": "Red",
+            "displayFolder": "Colors",
+            "expression": "\"#EB0000\"",
+            "lineageTag": "61753cd4-c0dc-492e-a1f7-245c1d773279"
+          },
+          {
+            "name": "HDI Color",
+            "displayFolder": "Classification and Conditionals",
+            "expression": [
+              "",
+              "SWITCH(",
+              "    [HDI Class],",
+              "    \"Very high human development\",[Dark Green],",
+              "    \"High human development\",[Light Green],",
+              "    \"Medium human development\",[Orange],",
+              "    \"Low human development\",[Red],",
+              "    \"No Data\",[No data])"
+            ],
+            "lineageTag": "fc71299e-7f1e-4342-8793-0b8470149027"
+          },
+          {
+            "name": "No Data",
+            "displayFolder": "Colors",
+            "expression": "\"#E6E6E6\"",
+            "lineageTag": "cff4a9f0-2094-4499-9e12-0ff702dfaf44"
+          },
+          {
+            "name": "Last year HDI",
+            "displayFolder": "Actual Values",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    MAX(factData[Year]),",
+              "    dMetrics[Alias]=\"HDI\")"
+            ],
+            "formatString": "0",
+            "lineageTag": "9e07b681-61e9-424a-80b1-c2df54b5d29d"
+          },
+          {
+            "name": "Actual Human Development Index (HDI)",
+            "annotations": [
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "displayFolder": "Actual Values",
+            "expression": [
+              "",
+              "VAR max_year = [Last year HDI]",
+              "RETURN",
+              "CALCULATE([Human Development Index (HDI)],factData[Year]=max_year)"
+            ],
+            "lineageTag": "95b990aa-9471-4022-87b5-39d6c648c5eb"
+          },
+          {
+            "name": "Last year GDP/c",
+            "displayFolder": "Actual Values",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    MAX(factData[Year]),",
+              "    dMetrics[Alias]=\"GDP/c\")"
+            ],
+            "formatString": "0",
+            "lineageTag": "0ee9234e-64b6-43c2-a01d-d4c5d76a2529"
+          },
+          {
+            "name": "Actual GDP per capita",
+            "annotations": [
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"currencyCulture\":\"en-US\"}"
+              }
+            ],
+            "displayFolder": "Actual Values",
+            "expression": [
+              "",
+              "VAR max_year = [Last year GDP/c]",
+              "RETURN",
+              "CALCULATE(",
+              "    [Gross domestic product per capita (GDP per capita)],",
+              "    factData[Year]=max_year)"
+            ],
+            "formatString": "\\$#,0;(\\$#,0);\\$#,0",
+            "lineageTag": "8a20dcab-f04a-40c1-be0c-ce2d1c418a11"
+          },
+          {
+            "name": "HDI Description",
+            "displayFolder": "Others",
+            "expression": "CALCULATE(MAX(dMetrics[Description]),dMetrics[Alias]=\"HDI\")",
+            "lineageTag": "c62781c1-d177-4255-ba12-740e503f8d64"
+          },
+          {
+            "name": "Expected years of schooling",
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"s_years\",",
+              "    NOT ISBLANK(dCountries[ISO3])",
+              ")"
+            ],
+            "formatString": "0.0",
+            "lineageTag": "cc1b8f30-0f92-4dd9-b431-243bb45c67d5"
+          },
+          {
+            "name": "Life expectancy at birth",
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    AVERAGE(factData[Value]),",
+              "    dMetrics[Alias]=\"life_exp\",",
+              "    NOT ISBLANK(dCountries[ISO3])",
+              ")"
+            ],
+            "formatString": "0.0",
+            "lineageTag": "37fdfb72-7e5c-47f0-ad7a-307118f2befe"
+          },
+          {
+            "name": "Gross national income (GNI)",
+            "displayFolder": "Indexes",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "    MAX(factData[Class]),",
+              "    dMetrics[Alias]=\"GNI\",",
+              "    NOT ISBLANK(dCountries[ISO3])",
+              ")"
+            ],
+            "lineageTag": "48d02d4a-58c8-462d-a934-e4851e526ecb"
+          },
+          {
+            "name": "HDI Sources",
+            "displayFolder": "Others",
+            "expression": [
+              "\"Source: \"&",
+              "    CALCULATE(",
+              "        MAX(dMetrics[Source]),",
+              "        dMetrics[Alias]=\"HDI\")"
+            ],
+            "lineageTag": "16dc725b-af39-4bf2-9fe5-3a6fb7ebddf8"
+          },
+          {
+            "name": "Life Expectancy Color",
+            "displayFolder": "Classification and Conditionals",
+            "expression": [
+              "",
+              "VAR CurrentLifeExpectancy = [Life expectancy at birth]",
+              "VAR MinLifeExpectancy = CALCULATE(MIN(factData[Value]), ALL('dCountries'),dMetrics[Alias]=\"life_exp\")",
+              "VAR MaxLifeExpectancy = CALCULATE(MAX(factData[Value]), ALL('dCountries'),dMetrics[Alias]=\"life_exp\")",
+              "VAR LifeExpectancyRange = MaxLifeExpectancy - MinLifeExpectancy",
+              "VAR FirstQuartile = MinLifeExpectancy + 0.25 * LifeExpectancyRange",
+              "VAR _Median = MinLifeExpectancy + 0.5 * LifeExpectancyRange",
+              "VAR ThirdQuartile = MinLifeExpectancy + 0.75 * LifeExpectancyRange",
+              "RETURN",
+              "    SWITCH(TRUE(),",
+              "        ISBLANK(CurrentLifeExpectancy),[No Data],",
+              "        CurrentLifeExpectancy <= FirstQuartile, [Red],",
+              "        CurrentLifeExpectancy <= _Median, [Orange],",
+              "        CurrentLifeExpectancy <= ThirdQuartile, [Light Green],",
+              "        CurrentLifeExpectancy > ThirdQuartile, [Dark Green],",
+              "        BLANK()",
+              "    )",
+              ""
+            ],
+            "lineageTag": "2269a1d8-88a0-49dc-ade2-0bc540681443"
+          },
+          {
+            "name": "Expected years of schooling Color",
+            "displayFolder": "Classification and Conditionals",
+            "expression": [
+              "",
+              "VAR ExpectedyearsSchooling = [Expected years of schooling]",
+              "VAR MinExpectedyearsSchooling = CALCULATE(MIN(factData[Value]), ALL('dCountries'),dMetrics[Alias]=\"s_years\")",
+              "VAR MaxExpectedyearsSchooling = CALCULATE(MAX(factData[Value]), ALL('dCountries'),dMetrics[Alias]=\"s_years\")",
+              "VAR ExpectedyearsSchoolingRange = MaxExpectedyearsSchooling - MinExpectedyearsSchooling",
+              "VAR FirstQuartile = MinExpectedyearsSchooling + 0.25 * ExpectedyearsSchoolingRange",
+              "VAR _Median = MinExpectedyearsSchooling + 0.5 * ExpectedyearsSchoolingRange",
+              "VAR ThirdQuartile = MinExpectedyearsSchooling + 0.75 * ExpectedyearsSchoolingRange",
+              "RETURN",
+              "    SWITCH(TRUE(),",
+              "        ISBLANK(ExpectedyearsSchooling),[No Data],",
+              "        ExpectedyearsSchooling <= FirstQuartile, [Red],",
+              "        ExpectedyearsSchooling <= _Median, [Orange],",
+              "        ExpectedyearsSchooling <= ThirdQuartile, [Light Green],",
+              "        ExpectedyearsSchooling > ThirdQuartile, [Dark Green],",
+              "        BLANK()",
+              "    )",
+              ""
+            ],
+            "lineageTag": "cb275cc4-1483-448e-b02d-dbfc54374da8"
+          },
+          {
+            "name": "GNI Color",
+            "displayFolder": "Classification and Conditionals",
+            "expression": [
+              "",
+              "SWITCH([Gross national income (GNI)],",
+              "\"High income\",[Dark Green],",
+              "\"Lower-middle income\",[Orange],",
+              "\"Upper-middle income\",[Light Green],",
+              "\"Low income\",[Red],[No Data])",
+              ""
+            ],
+            "lineageTag": "a082deec-3962-417d-b184-ee2c2d0eff59"
+          },
+          {
+            "name": "HD Dynamic color",
+            "displayFolder": "Classification and Conditionals",
+            "expression": [
+              "",
+              "SWITCH(",
+              "    SELECTEDVALUE(dMetrics[Alias]),",
+              "    \"HDI\",[HDI Color],",
+              "    \"s_years\",[Expected years of schooling Color],",
+              "    \"life_exp\",[Life Expectancy Color],",
+              "    \"GNI\",[GNI Color])"
+            ],
+            "lineageTag": "d7a385b7-d083-4629-8660-02f180562d60"
+          },
+          {
+            "name": "HDI Map Title",
+            "displayFolder": "Others",
+            "expression": "SELECTEDVALUE(dMetrics[Attribute])&\" (Year \"&SELECTEDVALUE(dYear[Year])&\")\"",
+            "lineageTag": "36bab4bf-4feb-427f-a5c4-2f04b22cbd4d"
+          },
+          {
+            "name": "Population Sources",
+            "displayFolder": "Weather",
+            "expression": [
+              "\"Source: \"&",
+              "    CALCULATE(",
+              "        MAX(dMetrics[Source]),",
+              "        dMetrics[Alias]=\"pop\")"
+            ],
+            "lineageTag": "51606ce5-6002-4726-b7cc-3e319c34965e"
+          },
+          {
+            "name": "Max Temperature",
+            "annotations": [
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "displayFolder": "Weather",
+            "expression": [
+              "",
+              "//Selected metric system",
+              "VAR system = SELECTEDVALUE(dMetricSystem[Metric System],\"International system\")",
+              "//International units",
+              "VAR si = MAX(factForecast[temp_c])",
+              "//Imperial units",
+              "VAR imperial = MAX(factForecast[temp_f])",
+              "RETURN",
+              "//Result",
+              "IF(",
+              "    system=\"Imperial system\", ",
+              "    imperial,",
+              "    si)"
+            ],
+            "lineageTag": "bdcf8b94-97f4-48df-98e6-75bbdacbf151"
+          },
+          {
+            "name": "Min Temperature",
+            "annotations": [
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ],
+            "displayFolder": "Weather",
+            "expression": [
+              "",
+              "//Selected metric system",
+              "VAR system = SELECTEDVALUE(dMetricSystem[Metric System],\"International system\")",
+              "//International units",
+              "VAR si = MIN(factForecast[temp_c])",
+              "//Imperial units",
+              "VAR imperial = MIN(factForecast[temp_f])",
+              "RETURN",
+              "//Result",
+              "IF(",
+              "    system=\"Imperial system\", ",
+              "    imperial,",
+              "    si)"
+            ],
+            "lineageTag": "2f02aad4-fe0b-4490-b2ff-600ea01b3d65"
+          },
+          {
+            "name": "Rain (%)",
+            "displayFolder": "Weather",
+            "expression": "DIVIDE(AVERAGE(factForecast[chance_of_rain]),100)",
+            "formatString": "0\\ %;-0\\ %;0\\ %",
+            "lineageTag": "dc517bd6-2a54-49ec-a8be-84ef866c8216"
+          },
+          {
+            "name": "TemperatureTitle",
+            "displayFolder": "Weather",
+            "expression": [
+              "",
+              "VAR system = SELECTEDVALUE(dMetricSystem[Metric System],\"International system\")",
+              "RETURN",
+              "IF(system = \"International system\", \"Temperature in °C\", \"Temperature in ℉\")"
+            ],
+            "lineageTag": "4c692a57-7c60-4051-ae4c-254bb55d929c"
+          },
+          {
+            "name": "Humidity",
+            "displayFolder": "Weather",
+            "expression": "DIVIDE(AVERAGE(factForecast[humidity]),100)",
+            "formatString": "0.0%;-0.0%;0.0%",
+            "lineageTag": "84a591a3-32e1-4b02-a940-fef0e59559fe"
+          },
+          {
+            "name": "HDI Title",
+            "displayFolder": "Others",
+            "expression": "\"Human Development - Year \"&SELECTEDVALUE(dYear[Year])",
+            "lineageTag": "671151c4-61fa-4784-9da2-1bbd20e3ff9f"
+          },
+          {
+            "name": "GDP Title",
+            "displayFolder": "Others",
+            "expression": "\"Gross Domestic Product - Year \"&SELECTEDVALUE(dYear[Year])",
+            "lineageTag": "dacda30e-7e2a-4b4b-949a-1595ecba28ce"
+          },
+          {
+            "name": "GDP Description",
+            "displayFolder": "Others",
+            "expression": "CALCULATE(MAX(dMetrics[Description]),dMetrics[Alias]=\"GDP\")",
+            "lineageTag": "ddbb21ab-9a01-4ce0-b78c-a36eefe8e9ad"
+          },
+          {
+            "name": "GDP Sources",
+            "displayFolder": "Others",
+            "expression": [
+              "\"Source: \"&",
+              "    CALCULATE(",
+              "        MAX(dMetrics[Source]),",
+              "        dMetrics[Alias]=\"GDP\")"
+            ],
+            "lineageTag": "8f00de55-ecac-4009-9ea8-d830c5c26eee"
+          },
+          {
+            "name": "GDP per capita classification",
+            "displayFolder": "Classification and Conditionals",
+            "expression": [
+              "",
+              "SWITCH(TRUE(),",
+              "    [Gross domestic product per capita (GDP per capita)] <= 1035, \"Low\",",
+              "    [Gross domestic product per capita (GDP per capita)] <= 4045, \"Lower-middle\",",
+              "    [Gross domestic product per capita (GDP per capita)] <= 12535, \"Upper-middle\",",
+              "    [Gross domestic product per capita (GDP per capita)] > 12535, \"High\"",
+              ")"
+            ],
+            "lineageTag": "fcc6eae4-bd84-4554-b941-869026d2b653"
+          },
+          {
+            "name": "GDP per capita color",
+            "displayFolder": "Colors",
+            "expression": [
+              "",
+              "SWITCH(TRUE(),",
+              "    [Gross domestic product per capita (GDP per capita)] = BLANK(), [No Data],",
+              "    [Gross domestic product per capita (GDP per capita)] <= 1035, [Red],",
+              "    [Gross domestic product per capita (GDP per capita)] <= 4045, [Orange],",
+              "    [Gross domestic product per capita (GDP per capita)] <= 12535, [Light Green],",
+              "    [Gross domestic product per capita (GDP per capita)] > 12535, [Dark Green]",
+              ")"
+            ],
+            "lineageTag": "e971a4db-fad7-4960-b0ee-97b91728a10c"
+          },
+          {
+            "name": "GDP Map Title",
+            "displayFolder": "Others",
+            "expression": "\"GDP per Capita\"&\" (Year \"&SELECTEDVALUE(dYear[Year])&\")\"",
+            "lineageTag": "b37393f8-7472-4c69-af29-6817dfd1f517"
+          },
+          {
+            "name": "City name",
+            "expression": "SELECTEDVALUE(dCities[name])",
+            "lineageTag": "2c913444-1a15-407c-8ebe-68b7a9e3f79a"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "_Measures-4b5b93d2-f6cc-4e17-af03-2a326fb803ce",
+            "mode": "import",
+            "source": {
+              "expression": [
+                "let",
+                "    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText(\"i44FAA==\", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),",
+                "    #\"Changed Type\" = Table.TransformColumnTypes(Source,{{\"Column1\", type text}}),",
+                "    #\"Removed Columns\" = Table.RemoveColumns(#\"Changed Type\",{\"Column1\"})",
+                "in",
+                "    #\"Removed Columns\""
+              ],
+              "type": "m"
+            }
+          }
+        ]
+      },
+      {
+        "name": "dMetricSystem",
+        "annotations": [
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          },
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          }
+        ],
+        "columns": [
+          {
+            "name": "Metric System",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "e5b35561-d89d-42a3-81e4-af393c1ae6ee",
+            "sourceColumn": "Metric System",
+            "summarizeBy": "none"
+          }
+        ],
+        "lineageTag": "8bd251fb-eb01-4896-86e7-8540caece494",
+        "partitions": [
+          {
+            "name": "dMetricSystem-efec1648-b52b-439e-a817-ebfabf7ed877",
+            "mode": "import",
+            "queryGroup": "Dimension Tables",
+            "source": {
+              "expression": [
+                "let",
+                "    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText(\"i45W8swrSS3KSyzJzM9LzFEoriwuSc1VitUBSuQWpBZlIonFAgA=\", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#\"Metric System\" = _t]),",
+                "    #\"Changed Type\" = Table.TransformColumnTypes(Source,{{\"Metric System\", type text}})",
+                "in",
+                "    #\"Changed Type\""
+              ],
+              "type": "m"
+            }
+          }
+        ]
+      },
+      {
+        "name": "dMetrics",
+        "annotations": [
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          },
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          }
+        ],
+        "columns": [
+          {
+            "name": "Attribute",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "c71f8874-abc0-4e99-af07-f2a1033479a6",
+            "sourceColumn": "Attribute",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Alias",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "8a1978c1-8cca-4ad5-83fe-7a3c4d5d2e6b",
+            "sourceColumn": "Alias",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Description",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "90119446-d743-4dbb-90e7-e3afe6c37ac6",
+            "sourceColumn": "Description",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Source",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "c9284fd1-3d7d-4299-aa30-130c4d5c8c29",
+            "sourceColumn": "Source",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Link",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "8ffb429e-08ec-4dd1-8a7b-54e804620e32",
+            "sourceColumn": "Link",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Parameter name",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "string",
+            "lineageTag": "b7d0ff1c-027c-407d-9926-b6b9ca67dc02",
+            "sourceColumn": "Parameter name",
+            "summarizeBy": "none"
+          }
+        ],
+        "lineageTag": "92283c49-0c4d-4746-854f-9b05a6273ecf",
+        "partitions": [
+          {
+            "name": "dMetrics-ee12afd6-ffa4-442a-9c36-f5476591eba6",
+            "mode": "import",
+            "queryGroup": "Dimension Tables",
+            "source": {
+              "expression": [
+                "let",
+                "    Source = Excel.Workbook(File.Contents(PathToData&\"\\metrics_metadata.xlsx\"), null, true),",
+                "    Tabelle1_Sheet = Source{[Item=\"Tabelle1\",Kind=\"Sheet\"]}[Data],",
+                "    #\"Promoted Headers\" = Table.PromoteHeaders(Tabelle1_Sheet, [PromoteAllScalars=true]),",
+                "    #\"Changed Type1\" = Table.TransformColumnTypes(#\"Promoted Headers\",{{\"Attribute\", type text}, {\"Alias\", type text}, {\"Description\", type text}, {\"Source\", type text}, {\"Link\", type text}, {\"Parameter name\", type text}})",
+                "in",
+                "    #\"Changed Type1\""
+              ],
+              "type": "m"
+            }
+          }
+        ]
+      },
+      {
+        "name": "dYear",
+        "annotations": [
+          {
+            "name": "PBI_Id",
+            "value": "b4e3f1d57fca47dfa0889085a971fa41"
+          }
+        ],
+        "columns": [
+          {
+            "name": "Year",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ],
+            "dataType": "int64",
+            "formatString": "0",
+            "isDataTypeInferred": true,
+            "isNameInferred": true,
+            "lineageTag": "bb55845b-9244-4a1f-8319-f8cdc78dabf2",
+            "sourceColumn": "factData[Year]",
+            "summarizeBy": "none",
+            "type": "calculatedTableColumn"
+          }
+        ],
+        "lineageTag": "f6e40dbb-8985-4414-826c-a724dfe70ad2",
+        "partitions": [
+          {
+            "name": "dYear-5157030c-eeec-40a4-82a0-465803a11a61",
+            "mode": "import",
+            "source": {
+              "expression": [
+                "CALCULATETABLE(",
+                "    DISTINCT(factData[Year]), factData[Year]>1990)"
+              ],
+              "type": "calculated"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
